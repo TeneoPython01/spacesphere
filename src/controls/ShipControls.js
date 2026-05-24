@@ -40,16 +40,17 @@ export default class ShipControls {
   }
 
   update(dt) {
-    // Apply mouse look (yaw/pitch)
+    // Apply mouse look using ship-local axes so feel is consistent regardless of roll
+    // Drag right → turn right (yaw around local up, negative = clockwise from above)
+    // Drag down → pitch up (pull-stick convention, positive movementY = nose up)
     const yawDelta = -this.mouseDelta.x * MOUSE_SENSITIVITY;
-    const pitchDelta = -this.mouseDelta.y * MOUSE_SENSITIVITY;
+    const pitchDelta = this.mouseDelta.y * MOUSE_SENSITIVITY;
 
-    // Build incremental rotation quaternion
     const yawQuat = new THREE.Quaternion();
-    yawQuat.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yawDelta);
+    yawQuat.setFromAxisAngle(this.ship.getUpVector(), yawDelta);
 
     const pitchQuat = new THREE.Quaternion();
-    pitchQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitchDelta);
+    pitchQuat.setFromAxisAngle(this.ship.getRightVector(), pitchDelta);
 
     const rotationQuat = new THREE.Quaternion();
     rotationQuat.multiplyQuaternions(yawQuat, pitchQuat);

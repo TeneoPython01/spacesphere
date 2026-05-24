@@ -84,8 +84,8 @@ export default class Game {
 
     // Attach camera as child of ship (cockpit view)
     this.playerShip.mesh.add(this.camera);
-    this.camera.position.set(0, 0.5, 1);
-    this.camera.lookAt(new THREE.Vector3(0, 0, -10));
+    this.camera.position.set(0, 3, 10);
+    this.camera.lookAt(new THREE.Vector3(0, 0, -100));
   }
 
   _initStarField() {
@@ -214,10 +214,10 @@ export default class Game {
   }
 
   _fireLaser() {
-    this.laserSystem.fire(
-      this.playerShip.mesh.position,
-      this.playerShip.getForwardVector()
-    );
+    const forward = this.playerShip.getForwardVector();
+    // Fire from nose tip (~7 units ahead of ship center)
+    const origin = this.playerShip.mesh.position.clone().addScaledVector(forward, 7);
+    this.laserSystem.fire(origin, forward);
 
     // Destroy hit objects in minimap and world/collision tracking
     const destroyed = this.laserSystem.lastHitObjects;

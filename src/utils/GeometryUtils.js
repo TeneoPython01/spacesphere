@@ -109,45 +109,83 @@ export function buildEnemyShip() {
 export function buildPlayerShip() {
   const group = new THREE.Group();
 
-  // Main hull - cone pointing forward
-  const hullGeom = new THREE.ConeGeometry(1, 5, 8);
-  const hullMat = new THREE.MeshStandardMaterial({
-    color: 0x0066cc,
-    metalness: 0.5,
-    roughness: 0.5,
-  });
-  const hull = new THREE.Mesh(hullGeom, hullMat);
-  hull.rotation.z = Math.PI / 2; // point along -Z
-  group.add(hull);
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1155cc, metalness: 0.6, roughness: 0.4 });
+  const noseMat = new THREE.MeshStandardMaterial({ color: 0x0044bb, metalness: 0.7, roughness: 0.3 });
+  const wingMat = new THREE.MeshStandardMaterial({ color: 0x0d47a1, metalness: 0.5, roughness: 0.5, side: THREE.DoubleSide });
+  const cockpitMat = new THREE.MeshStandardMaterial({ color: 0x88ccff, metalness: 0.1, roughness: 0.1, transparent: true, opacity: 0.8 });
+  const engineMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.9, roughness: 0.1 });
+  const glowMat = new THREE.MeshStandardMaterial({ color: 0xff7700, emissive: 0xff7700, emissiveIntensity: 1.5 });
 
-  // Wings
-  const wingGeom = new THREE.BoxGeometry(8, 0.3, 2);
-  const wingMat = new THREE.MeshStandardMaterial({
-    color: 0x004499,
-    metalness: 0.4,
-    roughness: 0.6,
-  });
-  const wings = new THREE.Mesh(wingGeom, wingMat);
-  wings.position.z = -0.5;
-  group.add(wings);
+  // Fuselage - CylinderGeometry default axis is Y; rotation.x = PI/2 aligns it to Z
+  const fuselageGeom = new THREE.CylinderGeometry(0.35, 0.4, 8, 10);
+  const fuselage = new THREE.Mesh(fuselageGeom, bodyMat);
+  fuselage.rotation.x = Math.PI / 2;
+  group.add(fuselage);
 
-  // Engine exhausts
-  const exhaustGeom = new THREE.CylinderGeometry(0.3, 0.3, 1.5, 6);
-  const exhaustMat = new THREE.MeshStandardMaterial({
-    color: 0x333333,
-    metalness: 0.9,
-    roughness: 0.1,
-  });
+  // Nose cone - rotation.x = -PI/2 points the cone tip at -Z (forward)
+  const noseGeom = new THREE.ConeGeometry(0.35, 2.5, 10);
+  const nose = new THREE.Mesh(noseGeom, noseMat);
+  nose.rotation.x = -Math.PI / 2;
+  nose.position.z = -5.25;
+  group.add(nose);
 
-  const exhaustLeft = new THREE.Mesh(exhaustGeom, exhaustMat);
-  exhaustLeft.position.set(-1.5, 0, 2.5);
-  exhaustLeft.rotation.z = Math.PI / 2;
-  group.add(exhaustLeft);
+  // Cockpit glass bubble (hemisphere on top, forward)
+  const cockpitGeom = new THREE.SphereGeometry(0.4, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2);
+  const cockpit = new THREE.Mesh(cockpitGeom, cockpitMat);
+  cockpit.position.set(0, 0.35, -1.5);
+  group.add(cockpit);
 
-  const exhaustRight = new THREE.Mesh(exhaustGeom, exhaustMat);
-  exhaustRight.position.set(1.5, 0, 2.5);
-  exhaustRight.rotation.z = Math.PI / 2;
-  group.add(exhaustRight);
+  // Delta wings via ExtrudeGeometry in local XY, rotated -PI/2 around X to lie flat in XZ
+  // After rotation: shape_x → world_x, shape_y → world_(-z), extrude_z → world_y (thickness)
+  const wingExtrude = { depth: 0.2, bevelEnabled: false };
+
+  const portShape = new THREE.Shape();
+  portShape.moveTo(-0.35, 2);    // forward root (world z = -2)
+  portShape.lineTo(-4, 0);       // outer leading tip (world z = 0)
+  portShape.lineTo(-3.5, -2);    // outer trailing tip (world z = 2)
+  portShape.lineTo(-0.35, -2);   // rear root (world z = 2)
+  portShape.closePath();
+
+  const portWing = new THREE.Mesh(new THREE.ExtrudeGeometry(portShape, wingExtrude), wingMat);
+  portWing.rotation.x = -Math.PI / 2;
+  portWing.position.y = -0.1;
+  group.add(portWing);
+
+  const starShape = new THREE.Shape();
+  starShape.moveTo(0.35, 2);
+  starShape.lineTo(4, 0);
+  starShape.lineTo(3.5, -2);
+  starShape.lineTo(0.35, -2);
+  starShape.closePath();
+
+  const starWing = new THREE.Mesh(new THREE.ExtrudeGeometry(starShape, wingExtrude), wingMat);
+  starWing.rotation.x = -Math.PI / 2;
+  starWing.position.y = -0.1;
+  group.add(starWing);
+
+  // Engine nacelles at rear
+  const nacelleGeom = new THREE.CylinderGeometry(0.25, 0.3, 2, 8);
+
+  const leftNacelle = new THREE.Mesh(nacelleGeom, engineMat);
+  leftNacelle.rotation.x = Math.PI / 2;
+  leftNacelle.position.set(-1.2, -0.3, 3);
+  group.add(leftNacelle);
+
+  const rightNacelle = new THREE.Mesh(nacelleGeom, engineMat);
+  rightNacelle.rotation.x = Math.PI / 2;
+  rightNacelle.position.set(1.2, -0.3, 3);
+  group.add(rightNacelle);
+
+  // Engine glow discs
+  const glowGeom = new THREE.CircleGeometry(0.22, 8);
+
+  const leftGlow = new THREE.Mesh(glowGeom, glowMat);
+  leftGlow.position.set(-1.2, -0.3, 4.1);
+  group.add(leftGlow);
+
+  const rightGlow = new THREE.Mesh(glowGeom, glowMat);
+  rightGlow.position.set(1.2, -0.3, 4.1);
+  group.add(rightGlow);
 
   return group;
 }

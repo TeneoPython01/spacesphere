@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { WORLD_RADIUS, MINIMAP_SIZE } from '../constants.js';
 
 export default class Minimap {
@@ -72,9 +73,16 @@ export default class Minimap {
         ctx.translate(mapX, mapY);
 
         if (type === 'ship') {
-          // White triangle pointing in yaw direction
+          const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(obj.quaternion);
+          // Each minimap canvas maps two world axes to canvas x/y (both positive = down-right).
+          // atan2(a, -b) rotates an upward-pointing triangle to face the projected forward direction.
+          let angle;
+          if (axes === 'xy')      angle = Math.atan2(fwd.x, -fwd.y);
+          else if (axes === 'xz') angle = Math.atan2(fwd.x, -fwd.z);
+          else                    angle = Math.atan2(fwd.y, -fwd.z);
+
           ctx.fillStyle = '#ffffff';
-          ctx.rotate(obj.mesh.rotation.order === 'YXZ' ? 0 : 0); // simplify for now
+          ctx.rotate(angle);
           ctx.beginPath();
           ctx.moveTo(0, -6);
           ctx.lineTo(-4, 4);
