@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spacesphere - 3D Space Flight Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <!-- HUD Overlay -->
+    <div id="hud">
+        <div id="info-panel">
+            <div id="speed-readout">Speed: 0.0</div>
+            <div id="crosshair">+</div>
+        </div>
+
+        <!-- Minimaps -->
+        <div id="minimap-panel">
+            <div class="minimap-container">
+                <div class="minimap-label">XY (Z-axis)</div>
+                <canvas id="minimap-xy" width="120" height="120"></canvas>
+            </div>
+            <div class="minimap-container">
+                <div class="minimap-label">XZ (Y-axis)</div>
+                <canvas id="minimap-xz" width="120" height="120"></canvas>
+            </div>
+            <div class="minimap-container">
+                <div class="minimap-label">YZ (X-axis)</div>
+                <canvas id="minimap-yz" width="120" height="120"></canvas>
+            </div>
+        </div>
+
+        <!-- Pointer Lock Overlay -->
+        <div id="pointer-lock-overlay">
+            <p>Click to enter flight mode</p>
+            <p style="font-size: 12px;">Press ESC to exit</p>
+        </div>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
